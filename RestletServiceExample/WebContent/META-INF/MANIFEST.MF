@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: RestletPlug
+Bundle-SymbolicName: RestletPlug
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: restletplug.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.restlet;bundle-version="2.1.1",
+ org.restlet.ext.jackson;bundle-version="2.1.1",
+ jackson-core-asl;bundle-version="1.9.8",
+ jackson-mapper-asl;bundle-version="1.9.8"
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
