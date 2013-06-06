@@ -70,7 +70,7 @@ public class RestletDriver implements DriverService {
 			Object arg2, String arg3, int timout)
 			throws UnsupportedOperationException, ConnectionException {
 
-		//client = (ClientResource) deviceConnection.getConnectionHandle();
+		client = (ClientResource) deviceConnection.getConnectionHandle();
 		client.addSegment("rest");
 		client.addSegment("channel");
 		client.addSegment("channel1");
