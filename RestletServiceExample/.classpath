@@ -12,6 +12,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/RestLet"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Restlet"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
