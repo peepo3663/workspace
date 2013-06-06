@@ -3,16 +3,17 @@ package driver;
 import helper.InsecureSslContextFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.openmuc.framework.config.ArgumentSyntaxException;
 import org.openmuc.framework.config.ChannelScanInformation;
 import org.openmuc.framework.config.DeviceScanInformation;
+import org.openmuc.framework.data.ValueType;
 import org.openmuc.framework.driver.spi.ChannelRecordContainer;
 import org.openmuc.framework.driver.spi.ChannelValueContainer;
 import org.openmuc.framework.driver.spi.ConnectionException;
@@ -20,37 +21,30 @@ import org.openmuc.framework.driver.spi.DeviceConnection;
 import org.openmuc.framework.driver.spi.DriverService;
 import org.openmuc.framework.driver.spi.RecordsReceivedListener;
 import org.restlet.Context;
-import org.restlet.data.MediaType;
-import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 
 public class RestletDriver implements DriverService {
-	private ClientResource client;
-	//private final String path = "https://localhost:8443/";
 	private final Context ctx = new Context();
-	private ObjectMapper mapper;
-	private String deviceAddress;
+	private List<ChannelScanInformation> channelInfoList;
 
 	public RestletDriver() {
 		ctx.getAttributes().put("sslContextFactory",
 				new InsecureSslContextFactory());
-
-		mapper = new ObjectMapper();
 	}
 
 	@Override
-	public Object connect(String interfaceAddress, String deviceAddress, String settings, int timeout)
-			throws ArgumentSyntaxException, ConnectionException {
-		
-		this.deviceAddress = deviceAddress;
-		client = new ClientResource(ctx, deviceAddress);
+	public Object connect(String interfaceAddress, String deviceAddress,
+			String settings, int timeout) throws ArgumentSyntaxException,
+			ConnectionException {
+
+		ClientResource client = new ClientResource(ctx, deviceAddress);
 		return client;
 	}
 
 	@Override
 	public void disconnect(DeviceConnection deviceConnection) {
-		
+
 	}
 
 	@Override
@@ -66,44 +60,64 @@ public class RestletDriver implements DriverService {
 	}
 
 	@Override
-	public Object read(DeviceConnection deviceConnection, List<ChannelRecordContainer> list,
-			Object arg2, String arg3, int timout)
+	public Object read(DeviceConnection deviceConnection,
+			List<ChannelRecordContainer> container, Object arg2,
+			String channelAddress, int timout)
 			throws UnsupportedOperationException, ConnectionException {
 
-		client = (ClientResource) deviceConnection.getConnectionHandle();
+		String result = null;
+		ClientResource client = (ClientResource) deviceConnection.getConnectionHandle();
 		client.addSegment("rest");
 		client.addSegment("channel");
-		client.addSegment("channel1");
+		client.addSegment(channelAddress);
 
-		return client;
-	}
-
-	@Override
-	public List<ChannelScanInformation> scanForChannels(DeviceConnection deviceConnection,
-			int arg1) throws UnsupportedOperationException, ConnectionException {
-
-		// device.getDeviceAddress() should be
-		// "https://localhost:8443/rest/channel/"
-		client = (ClientResource)deviceConnection.getConnectionHandle();
-		client.addSegment("rest");
-		client.addSegment("channel");
-
-		List<ChannelScanInformation> listChannel = null;
 		try {
-			listChannel = mapper.readValue(client.get().getText(),
-					new TypeReference<List<ChannelScanInformation>>() {
-					});
-		} catch (JsonParseException e) {
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			e.printStackTrace();
+			result = client.get().getText();
 		} catch (ResourceException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-		return listChannel;
+		return result;
+	}
+
+	@Override
+	public List<ChannelScanInformation> scanForChannels(
+			DeviceConnection deviceConnection, int timeout)
+			throws UnsupportedOperationException, ConnectionException {
+
+		channelInfoList = new ArrayList<ChannelScanInformation>();
+
+		ClientResource client = (ClientResource) deviceConnection.getConnectionHandle();
+		client.addSegment("rest");
+		client.addSegment("channel");
+
+		JSONArray jsonArray = null;
+		try {
+			jsonArray = new JSONArray(client.get().getText());
+			for (int i = 0; i < jsonArray.length(); i++) {
+				JSONObject json;
+				String label;
+				try {
+					json = jsonArray.getJSONObject(i);
+					label = json.get("label").toString();
+					channelInfoList.add(new ChannelScanInformation(label,
+							label, ValueType.BYTE_STRING, null));
+				} catch (JSONException e) {
+					System.out
+							.println("scanForChannels : Forloop JSONArray Error.");
+				}
+			}
+		} catch (JSONException e) {
+			System.out
+					.println("scanForChannels : Assign values to jsonArray Error.");
+		} catch (IOException e) {
+			System.out
+					.println("scanForChannels : client.get().getText() Error.");
+		}
+
+		return channelInfoList;
 	}
 
 	@Override
@@ -124,26 +138,23 @@ public class RestletDriver implements DriverService {
 
 	@Override
 	public Object write(DeviceConnection deviceConnection,
-			List<ChannelValueContainer> list, Object arg2, int timeout)
+			List<ChannelValueContainer> ValuelList, Object arg2, int timeout)
 			throws UnsupportedOperationException, ConnectionException {
-		client = (ClientResource)deviceConnection.getConnectionHandle();
-		client.addSegment("rest");
-		client.addSegment("channel");
-		client.addSegment(list.get(0).getChannelAddress());
-		
-		list.get(0).getChannelHandle();
-		String string = null;
-		try {
-			string = mapper.writeValueAsString(list.get(0).getChannelHandle());
-		} catch (JsonGenerationException e) {
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+
+		StringBuffer strBuffer = new StringBuffer();
+		for (ChannelValueContainer cvc : ValuelList) {
+			ClientResource client = (ClientResource) deviceConnection.getConnectionHandle();
+			client.addSegment("rest");
+			client.addSegment("channel");
+			client.addSegment(cvc.getChannelAddress());
+
+			try {
+				strBuffer.append(client.put(cvc.getValue()));
+			} catch (ResourceException e) {
+				e.printStackTrace();
+			}
 		}
-		
-		return client.put(new StringRepresentation(string,
-				MediaType.APPLICATION_JSON));
+
+		return strBuffer;
 	}
 }
