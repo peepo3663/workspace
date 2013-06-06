@@ -64,8 +64,6 @@ public class ClientResources {
 
 		String string = map.writeValueAsString(record);
 
-		System.out.println(string);
-
 		Representation rep = channelRoot.put(new StringRepresentation(string,
 				MediaType.APPLICATION_JSON));
 
