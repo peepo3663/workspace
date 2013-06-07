@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -13,6 +15,9 @@ import org.json.JSONObject;
 import org.openmuc.framework.config.ArgumentSyntaxException;
 import org.openmuc.framework.config.ChannelScanInformation;
 import org.openmuc.framework.config.DeviceScanInformation;
+import org.openmuc.framework.data.DoubleValue;
+import org.openmuc.framework.data.Record;
+import org.openmuc.framework.data.Value;
 import org.openmuc.framework.data.ValueType;
 import org.openmuc.framework.driver.spi.ChannelRecordContainer;
 import org.openmuc.framework.driver.spi.ChannelValueContainer;
@@ -21,16 +26,20 @@ import org.openmuc.framework.driver.spi.DeviceConnection;
 import org.openmuc.framework.driver.spi.DriverService;
 import org.openmuc.framework.driver.spi.RecordsReceivedListener;
 import org.restlet.Context;
+import org.restlet.data.ChallengeScheme;
+import org.restlet.data.MediaType;
+import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ClientResource;
-import org.restlet.resource.ResourceException;
 
 public class RestletDriver implements DriverService {
 	private final Context ctx = new Context();
 	private List<ChannelScanInformation> channelInfoList;
+	private ObjectMapper mapper;
 
 	public RestletDriver() {
 		ctx.getAttributes().put("sslContextFactory",
 				new InsecureSslContextFactory());
+		mapper = new ObjectMapper();
 	}
 
 	@Override
@@ -61,21 +70,25 @@ public class RestletDriver implements DriverService {
 
 	@Override
 	public Object read(DeviceConnection deviceConnection,
-			List<ChannelRecordContainer> container, Object arg2,
-			String channelAddress, int timout)
+			List<ChannelRecordContainer> container, Object obj,
+			String arg3, int timout)
 			throws UnsupportedOperationException, ConnectionException {
 
 		String result = null;
+		ChannelScanInformation channelInfo = null;
+		if(obj instanceof ChannelScanInformation){
+			channelInfo = (ChannelScanInformation)obj;
+		}
 		ClientResource client = (ClientResource) deviceConnection.getConnectionHandle();
 		client.addSegment("rest");
 		client.addSegment("channel");
-		client.addSegment(channelAddress);
+		client.addSegment(channelInfo.getChannelAddress());
 
 		try {
 			result = client.get().getText();
-		} catch (ResourceException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
+			System.out
+			.println("scanForChannels : client.get().getText() Error.");
 			e.printStackTrace();
 		}
 
@@ -138,23 +151,37 @@ public class RestletDriver implements DriverService {
 
 	@Override
 	public Object write(DeviceConnection deviceConnection,
-			List<ChannelValueContainer> ValuelList, Object arg2, int timeout)
+			List<ChannelValueContainer> ValuelList, Object obj, int timeout)
 			throws UnsupportedOperationException, ConnectionException {
-
-		StringBuffer strBuffer = new StringBuffer();
-		for (ChannelValueContainer cvc : ValuelList) {
-			ClientResource client = (ClientResource) deviceConnection.getConnectionHandle();
-			client.addSegment("rest");
-			client.addSegment("channel");
-			client.addSegment(cvc.getChannelAddress());
-
-			try {
-				strBuffer.append(client.put(cvc.getValue()));
-			} catch (ResourceException e) {
-				e.printStackTrace();
-			}
+		
+		ChannelScanInformation channelInfo = null;
+		if(obj instanceof ChannelScanInformation){
+			channelInfo = (ChannelScanInformation)obj;
+		}
+		ClientResource client = (ClientResource) deviceConnection.getConnectionHandle();
+		client.addSegment("rest");
+		client.addSegment("channel");
+		client.addSegment(channelInfo.getChannelAddress());
+		
+		client.setChallengeResponse(ChallengeScheme.HTTP_BASIC, "admin",
+				"admin");
+		
+		Value value = new DoubleValue(999);
+		Record record = new Record(value, new Long(999));
+		String string = null;
+		String result = null;
+		try {
+			string = mapper.writeValueAsString(record);
+			result = client.put(new StringRepresentation(string,
+					MediaType.APPLICATION_JSON)).getText();
+		} catch (JsonGenerationException e) {
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 
-		return strBuffer;
+		return result;
 	}
 }
