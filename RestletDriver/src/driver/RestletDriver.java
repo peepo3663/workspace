@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import main.Record;
+
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONArray;
@@ -14,8 +16,6 @@ import org.json.JSONObject;
 import org.openmuc.framework.config.ArgumentSyntaxException;
 import org.openmuc.framework.config.ChannelScanInformation;
 import org.openmuc.framework.config.DeviceScanInformation;
-import org.openmuc.framework.data.IntValue;
-import org.openmuc.framework.data.Record;
 import org.openmuc.framework.data.ValueType;
 import org.openmuc.framework.driver.spi.ChannelRecordContainer;
 import org.openmuc.framework.driver.spi.ChannelValueContainer;
@@ -25,6 +25,8 @@ import org.openmuc.framework.driver.spi.DriverService;
 import org.openmuc.framework.driver.spi.RecordsReceivedListener;
 import org.restlet.Context;
 import org.restlet.data.ChallengeScheme;
+import org.restlet.data.MediaType;
+import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ClientResource;
 
 public class RestletDriver implements DriverService {
@@ -77,9 +79,12 @@ public class RestletDriver implements DriverService {
 		}
 		ClientResource client = (ClientResource) deviceConnection
 				.getConnectionHandle();
+		
 		client.addSegment("rest");
 		client.addSegment("channel");
 		client.addSegment(channelInfo.getChannelAddress());
+		
+		System.out.println(client);
 
 		try {
 			result = client.get().getText();
@@ -165,28 +170,32 @@ public class RestletDriver implements DriverService {
 		client.setChallengeResponse(ChallengeScheme.HTTP_BASIC, "admin",
 				"admin");
 		
-		Record record = new Record(new IntValue(999), new Long(999L));
-		String string = null;
-		String result = null;
-		String json = "{"+"timestamp : "+record.getTimestamp()+", flag : "+record.getFlag()+ ", value : "+record.getValue().toString()+"}";
+		String string = null, result = null;
+		Record record = new Record();
+		record.setValue(999);
 		
 		try {
-			System.out.println(record);
 			
-			string = mapper.writeValueAsString(new JSONObject(json));
+			string = mapper.writeValueAsString(record);
 			
-//			result = client
-//					.put(new StringRepresentation(string,
-//							MediaType.APPLICATION_JSON)).getText();
+			result = client
+					.put(new StringRepresentation(string,
+							MediaType.APPLICATION_JSON)).getText();
 		} catch (JsonMappingException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 
 		return result;
+	}
+	
+	public DeviceConnection getDeviceConnection(String path) throws ArgumentSyntaxException, ConnectionException{
+		
+		Object newConnectionHandler = this.connect(null, path, null, 15);
+		DeviceConnection newDeviceConnection = new DeviceConnection(null, null,
+				null, newConnectionHandler);
+
+		return newDeviceConnection;
 	}
 }
