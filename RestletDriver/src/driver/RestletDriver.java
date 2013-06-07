@@ -16,6 +16,7 @@ import org.openmuc.framework.config.ArgumentSyntaxException;
 import org.openmuc.framework.config.ChannelScanInformation;
 import org.openmuc.framework.config.DeviceScanInformation;
 import org.openmuc.framework.data.DoubleValue;
+import org.openmuc.framework.data.IntValue;
 import org.openmuc.framework.data.Record;
 import org.openmuc.framework.data.Value;
 import org.openmuc.framework.data.ValueType;
@@ -30,6 +31,7 @@ import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ClientResource;
+import org.restlet.resource.ResourceException;
 
 public class RestletDriver implements DriverService {
 	private final Context ctx = new Context();
@@ -168,21 +170,26 @@ public class RestletDriver implements DriverService {
 
 		client.setChallengeResponse(ChallengeScheme.HTTP_BASIC, "admin",
 				"admin");
-
-		Value value = new DoubleValue(999);
-		Record record = new Record(value, new Long(999));
+		
+		Record record = new Record(new IntValue(999), new Long(999L));
 		String string = null;
 		String result = null;
+		String json = "{"+"timestamp : "+record.getTimestamp()+", flag : "+record.getFlag()+ ", value : "+record.getValue().toString()+"}";
+		
 		try {
-			string = mapper.writeValueAsString(record);
-			result = client
-					.put(new StringRepresentation(string,
-							MediaType.APPLICATION_JSON)).getText();
-		} catch (JsonGenerationException e) {
-			e.printStackTrace();
+			System.out.println(record);
+			
+			string = mapper.writeValueAsString(new JSONObject(json));
+			
+//			result = client
+//					.put(new StringRepresentation(string,
+//							MediaType.APPLICATION_JSON)).getText();
 		} catch (JsonMappingException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

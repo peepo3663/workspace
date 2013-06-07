@@ -41,7 +41,9 @@ public class Main {
 					null, newConnectionHandler);
 
 			//driver.read(deviceConnection2, null, null, channelInfo.getChannelAddress(), 15);
-			System.out.println(driver.read(newDeviceConnection, null, null, channelInfo.getChannelAddress(), 15));
+			//System.out.println(driver.read(newDeviceConnection, null, channelInfo, null, 15));
+			
+			System.out.println(driver.write(newDeviceConnection, null, channelInfo, 15));
 		}
 
 	}
