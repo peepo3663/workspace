@@ -7,6 +7,7 @@ import org.openmuc.framework.config.ArgumentSyntaxException;
 import org.openmuc.framework.config.ChannelScanInformation;
 import org.openmuc.framework.driver.spi.ConnectionException;
 import org.openmuc.framework.driver.spi.DeviceConnection;
+import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 
 import driver.RestletDriver;
@@ -34,14 +35,14 @@ public class Main {
 		
 		for (ChannelScanInformation channelInfo : listChannelInfo) {
 			
-			System.out.println(channelInfo.getChannelAddress());
-			
-			Object newConnectionHandler = driver.connect(null, path, null, 15);
-			DeviceConnection newDeviceConnection = new DeviceConnection(null, null,
-					null, newConnectionHandler);
-
-			//driver.read(deviceConnection2, null, null, channelInfo.getChannelAddress(), 15);
-			System.out.println(driver.read(newDeviceConnection, null, null, channelInfo.getChannelAddress(), 15));
+//			System.out.println(channelInfo.getChannelAddress());
+//			
+//			Object newConnectionHandler = driver.connect(null, path, null, 15);
+//			DeviceConnection newDeviceConnection = new DeviceConnection(null, null,
+//					null, newConnectionHandler);
+//
+//			//driver.read(deviceConnection2, null, null, channelInfo.getChannelAddress(), 15);
+//			System.out.println(driver.read(newDeviceConnection, null, null, channelInfo.getChannelAddress(), 15));
 		}
 
 	}
