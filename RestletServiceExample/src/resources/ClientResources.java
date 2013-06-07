@@ -5,8 +5,8 @@ import helper.InsecureSslContextFactory;
 import java.io.IOException;
 import java.util.List;
 
-import model.Channel;
 import model.Record;
+import model.Channel;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;

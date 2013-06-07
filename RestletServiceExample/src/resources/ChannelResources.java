@@ -2,8 +2,8 @@ package resources;
 
 import java.io.IOException;
 
-import model.Channel;
 import model.Record;
+import model.Channel;
 
 import org.restlet.data.Form;
 import org.restlet.representation.Representation;

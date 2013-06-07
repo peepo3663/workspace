@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONArray;
@@ -15,10 +14,8 @@ import org.json.JSONObject;
 import org.openmuc.framework.config.ArgumentSyntaxException;
 import org.openmuc.framework.config.ChannelScanInformation;
 import org.openmuc.framework.config.DeviceScanInformation;
-import org.openmuc.framework.data.DoubleValue;
 import org.openmuc.framework.data.IntValue;
 import org.openmuc.framework.data.Record;
-import org.openmuc.framework.data.Value;
 import org.openmuc.framework.data.ValueType;
 import org.openmuc.framework.driver.spi.ChannelRecordContainer;
 import org.openmuc.framework.driver.spi.ChannelValueContainer;
@@ -28,10 +25,7 @@ import org.openmuc.framework.driver.spi.DriverService;
 import org.openmuc.framework.driver.spi.RecordsReceivedListener;
 import org.restlet.Context;
 import org.restlet.data.ChallengeScheme;
-import org.restlet.data.MediaType;
-import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ClientResource;
-import org.restlet.resource.ResourceException;
 
 public class RestletDriver implements DriverService {
 	private final Context ctx = new Context();

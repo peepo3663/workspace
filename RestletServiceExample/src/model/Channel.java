@@ -1,5 +1,7 @@
 package model;
 
+import model.Record;
+
 public class Channel {
 	private String label;
 	private Record record;
