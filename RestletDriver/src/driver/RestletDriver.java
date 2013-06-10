@@ -3,19 +3,13 @@ package driver;
 import helper.InsecureSslContextFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-
 
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.openmuc.framework.config.ArgumentSyntaxException;
 import org.openmuc.framework.config.ChannelScanInformation;
 import org.openmuc.framework.config.DeviceScanInformation;
-import org.openmuc.framework.data.ValueType;
 import org.openmuc.framework.driver.spi.ChannelRecordContainer;
 import org.openmuc.framework.driver.spi.ChannelValueContainer;
 import org.openmuc.framework.driver.spi.ConnectionException;
@@ -28,18 +22,20 @@ import org.restlet.data.MediaType;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ClientResource;
 
-import resources.MapToChannelInfoList;
-import resources.Record;
+import domain.MapToChannelInfoList;
+import domain.Record;
+import domain.Validate;
 
 public class RestletDriver implements DriverService {
 	private final Context ctx = new Context();
-	private List<ChannelScanInformation> channelInfoList;
 	private ObjectMapper mapper;
+	private Validate validate;
 
 	public RestletDriver() {
 		ctx.getAttributes().put("sslContextFactory",
 				new InsecureSslContextFactory());
 		mapper = new ObjectMapper();
+		validate = new Validate();
 	}
 
 	@Override
@@ -48,6 +44,7 @@ public class RestletDriver implements DriverService {
 			ConnectionException {
 
 		ClientResource client = new ClientResource(ctx, deviceAddress);
+		System.out.println(client);
 		return client;
 	}
 
@@ -71,22 +68,21 @@ public class RestletDriver implements DriverService {
 	@Override
 	public Object read(DeviceConnection deviceConnection,
 			List<ChannelRecordContainer> container, Object obj, String arg3,
-			int timout) throws UnsupportedOperationException,
+			int timeout) throws UnsupportedOperationException,
 			ConnectionException {
 
 		String result = null;
 		ChannelScanInformation channelInfo = null;
-		if (obj instanceof ChannelScanInformation) {
+		if (validate.isChannelInfo(obj)) {
 			channelInfo = (ChannelScanInformation) obj;
 		}
+
 		ClientResource client = (ClientResource) deviceConnection
 				.getConnectionHandle();
-		
+
 		client.addSegment("rest");
 		client.addSegment("channel");
 		client.addSegment(channelInfo.getChannelAddress());
-		
-		System.out.println(client);
 
 		try {
 			result = client.get().getText();
@@ -109,7 +105,7 @@ public class RestletDriver implements DriverService {
 		client.addSegment("rest");
 		client.addSegment("channel");
 
-		return  new MapToChannelInfoList().mapToChannelInfoList(client);
+		return new MapToChannelInfoList().mapToChannelInfoList(client);
 	}
 
 	@Override
@@ -134,9 +130,11 @@ public class RestletDriver implements DriverService {
 			throws UnsupportedOperationException, ConnectionException {
 
 		ChannelScanInformation channelInfo = null;
-		if (obj instanceof ChannelScanInformation) {
+
+		if (validate.isChannelInfo(obj)) {
 			channelInfo = (ChannelScanInformation) obj;
 		}
+
 		ClientResource client = (ClientResource) deviceConnection
 				.getConnectionHandle();
 		client.addSegment("rest");
@@ -145,14 +143,14 @@ public class RestletDriver implements DriverService {
 
 		client.setChallengeResponse(ChallengeScheme.HTTP_BASIC, "admin",
 				"admin");
-		
+
 		String string = null, result = null;
 		Record record = new Record();
 		record.setValue(999);
-		
+
 		try {
 			string = mapper.writeValueAsString(record);
-			
+
 			result = client
 					.put(new StringRepresentation(string,
 							MediaType.APPLICATION_JSON)).getText();
@@ -164,9 +162,10 @@ public class RestletDriver implements DriverService {
 
 		return result;
 	}
-	
-	public DeviceConnection getDeviceConnection(String path) throws ArgumentSyntaxException, ConnectionException{
-		
+
+	public DeviceConnection getDeviceConnection(String path)
+			throws ArgumentSyntaxException, ConnectionException {
+
 		Object newConnectionHandler = this.connect(null, path, null, 15);
 		DeviceConnection newDeviceConnection = new DeviceConnection(null, null,
 				null, newConnectionHandler);

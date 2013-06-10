@@ -23,26 +23,22 @@ public class Main {
 
 		RestletDriver driver = new RestletDriver();
 
-		Object connectionHandler = driver.connect(null, path, null, 15);
+		Object connectionHandler = driver.connect(null, path, null, 10);
 
 		DeviceConnection deviceConnection = new DeviceConnection(null, null,
 				null, connectionHandler);
 		
 		//driver.scanForChannels(deviceConnection, 15);
 		List<ChannelScanInformation> listChannelInfo = driver.scanForChannels(
-				deviceConnection, 15);
+				deviceConnection, 10);
 		
 		for (ChannelScanInformation channelInfo : listChannelInfo) {
-			
-			System.out.println(channelInfo.getChannelAddress());
-			
-			
-
-			driver.read(driver.getDeviceConnection(path), null, channelInfo, null, 15);
-			//System.out.println(driver.read(driver.getDeviceConnection(path), null, channelInfo, null, 15));
-			driver.write(driver.getDeviceConnection(path), null, channelInfo, 15);
-			//System.out.println(driver.write(driver.getDeviceConnection(path), null, channelInfo, 15));
-			System.out.println("finished !");
+			System.out.println(channelInfo.getChannelAddress()+" started !");
+			//driver.read(driver.getDeviceConnection(path), null, channelInfo, null, 15);
+			System.out.println(driver.read(driver.getDeviceConnection(path), null, channelInfo, null, 10));
+			//driver.write(driver.getDeviceConnection(path), null, channelInfo, 15);
+			//System.out.println(driver.write(driver.getDeviceConnection(path), null, channelInfo, 10));
+			System.out.println(channelInfo.getChannelAddress()+" finished !");
 		}
 
 	}

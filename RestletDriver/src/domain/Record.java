@@ -1,4 +1,4 @@
-package resources;
+package domain;
 
 public class Record {
 	private long timestamp;
