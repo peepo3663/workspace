@@ -42,6 +42,7 @@ public class Main {
 			//System.out.println(driver.read(driver.getDeviceConnection(path), null, channelInfo, null, 15));
 			driver.write(driver.getDeviceConnection(path), null, channelInfo, 15);
 			//System.out.println(driver.write(driver.getDeviceConnection(path), null, channelInfo, 15));
+			System.out.println("finished !");
 		}
 
 	}

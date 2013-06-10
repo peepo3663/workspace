@@ -151,7 +151,6 @@ public class RestletDriver implements DriverService {
 		record.setValue(999);
 		
 		try {
-			
 			string = mapper.writeValueAsString(record);
 			
 			result = client
