@@ -1,10 +1,10 @@
 .classpath
 .project
 .class
-.git/
-.metadata/
+.git/*
+.metadata/*
 .gitignore
-.settings/
-target/
+.settings/*
+target/*
 .DS_Store
-bin/
+bin/*
