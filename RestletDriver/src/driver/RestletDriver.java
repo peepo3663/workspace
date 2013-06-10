@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import main.Record;
 
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -28,6 +27,9 @@ import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ClientResource;
+
+import resources.MapToChannelInfoList;
+import resources.Record;
 
 public class RestletDriver implements DriverService {
 	private final Context ctx = new Context();
@@ -102,38 +104,12 @@ public class RestletDriver implements DriverService {
 			DeviceConnection deviceConnection, int timeout)
 			throws UnsupportedOperationException, ConnectionException {
 
-		channelInfoList = new ArrayList<ChannelScanInformation>();
-
 		ClientResource client = (ClientResource) deviceConnection
 				.getConnectionHandle();
 		client.addSegment("rest");
 		client.addSegment("channel");
 
-		JSONArray jsonArray = null;
-		try {
-			jsonArray = new JSONArray(client.get().getText());
-			for (int i = 0; i < jsonArray.length(); i++) {
-				JSONObject json;
-				String label;
-				try {
-					json = jsonArray.getJSONObject(i);
-					label = json.get("label").toString();
-					channelInfoList.add(new ChannelScanInformation(label,
-							label, ValueType.BYTE_STRING, null));
-				} catch (JSONException e) {
-					System.out
-							.println("scanForChannels : Forloop JSONArray Error.");
-				}
-			}
-		} catch (JSONException e) {
-			System.out
-					.println("scanForChannels : Assign values to jsonArray Error.");
-		} catch (IOException e) {
-			System.out
-					.println("scanForChannels : client.get().getText() Error.");
-		}
-
-		return channelInfoList;
+		return  new MapToChannelInfoList().mapToChannelInfoList(client);
 	}
 
 	@Override
