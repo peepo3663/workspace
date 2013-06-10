@@ -38,10 +38,10 @@ public class Main {
 			
 			
 
-			//driver.read(newDeviceConnection, null, null, channelInfo.getChannelAddress(), 15);
-			System.out.println(driver.read(driver.getDeviceConnection(path), null, channelInfo, null, 15));
-			
-			System.out.println(driver.write(driver.getDeviceConnection(path), null, channelInfo, 15));
+			driver.read(driver.getDeviceConnection(path), null, channelInfo, null, 15);
+			//System.out.println(driver.read(driver.getDeviceConnection(path), null, channelInfo, null, 15));
+			driver.write(driver.getDeviceConnection(path), null, channelInfo, 15);
+			//System.out.println(driver.write(driver.getDeviceConnection(path), null, channelInfo, 15));
 		}
 
 	}
