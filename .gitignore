@@ -1,5 +1,10 @@
-/.classpath
-/.project
-/.class
-/.git
-/.metadata
+.classpath
+.project
+.class
+.git/
+.metadata/
+.gitignore
+.settings/
+target/
+.DS_Store
+bin/
